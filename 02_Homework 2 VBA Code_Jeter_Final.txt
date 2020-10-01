@@ -1,0 +1,205 @@
+Sub Stock_Performance_Summary()
+
+
+    Dim ws As Worksheet
+    
+    For Each ws In ThisWorkbook.Worksheets
+    ws.Activate
+    
+'---------------------------------------------------------------
+'Creating Summary Table
+'---------------------------------------------------------------
+
+    'Set variables for holding ticker name and calculations
+    Dim Ticker As String
+    Dim Volume_Total As Double
+    Dim Price_Change As Double
+    Dim Percent_Change As Double
+    Dim Year_Opening_Price As Double
+    Dim Year_Closing_Price As Double
+    Dim Ticker_Count
+    
+
+    Volume_Total = 0
+    Price_Change = 0
+    Percent_Change = 0
+    Ticker_Count = 0
+    
+    'Set Summary Table column Titles
+    Range("I1") = "Ticker"
+    Range("J1") = "Yearly Change"
+    Range("K1") = "Percent Change"
+    Range("L1") = "Total Stock Volume"
+    
+  ' Keep track of the location for each credit card brand in the summary table
+    Dim Summary_Table_Row As Integer
+     Summary_Table_Row = 2
+    
+        
+    'Determine the last row in column 1
+     LastRow = Cells(Rows.Count, 1).End(xlUp).Row
+    
+        
+        For j = 2 To LastRow
+        
+            'Check if still within same ticker, if not....
+            If Cells(j + 1, 1).Value <> Cells(j, 1).Value Then
+        
+                'Set ticker name & Add Volume Total
+                Ticker = Cells(j, 1).Value
+                'MsgBox ("Ticker Symbol is " & Ticker)
+                
+                Volume_Total = Volume_Total + Cells(j, 7).Value
+                'MsgBox ("Volume Total is " & Volume_Total)
+                
+               'Check Ticker Count
+               'MsgBox ("Ticker Count is" & Ticker_Count)
+               
+                'Establish Opening Price
+                Year_Opening_Price = Cells(j - Ticker_Count, 3).Value
+                'MsgBox ("Opening Price is " & Year_Opening_Price)
+                
+                'Establish Closing Price
+                Year_Closing_Price = Cells(j, 6).Value
+                'MsgBox ("Closing Price is " & Year_Closing_Price)
+                
+                'Calculate Annual Price Change & Percent Change
+                If Year_Opening_Price = 0 Then
+                    Price_Change = (Year_Closing_Price - Year_Opening_Price)
+                    Range("K" & Summary_Table_Row).Value = 0
+                    Range("I" & Summary_Table_Row).Interior.ColorIndex = 3
+                    Range("J" & Summary_Table_Row).Value = Price_Change
+                    Range("I" & Summary_Table_Row).Value = Ticker
+                    Range("L" & Summary_Table_Row).Value = Volume_Total
+
+                Else
+                    Percent_Change = ((Year_Closing_Price / Year_Opening_Price) - 1)
+                    Price_Change = (Year_Closing_Price - Year_Opening_Price)
+                    Range("K" & Summary_Table_Row).Value = Percent_Change
+                    Range("J" & Summary_Table_Row).Value = Price_Change
+                    Range("I" & Summary_Table_Row).Value = Ticker
+                    Range("L" & Summary_Table_Row).Value = Volume_Total
+
+                End If
+        
+                'Print into Summary Table
+                'Range("I" & Summary_Table_Row).Value = Ticker
+                
+                'Range("L" & Summary_Table_Row).Value = Volume_Total
+                
+                'Conditional format Price Change
+                    If Range("J" & Summary_Table_Row).Value >= 0 Then
+                    Range("J" & Summary_Table_Row).Interior.ColorIndex = 4
+                    Else
+                    Range("J" & Summary_Table_Row).Interior.ColorIndex = 3
+                    End If
+                
+                'Format Percent Change Column as a Percentage
+                Range("K" & Summary_Table_Row).NumberFormat = "0.00%"
+            
+                'Move to next row in Summary Table
+                Summary_Table_Row = Summary_Table_Row + 1
+                
+        
+                'Reset Volume Total, Price Change and Percent Change
+                Volume_Total = 0
+                Price_Change = 0
+                Percent_Change = 0
+                Ticker_Count = 0
+        
+            'If ticker symbols match, then...
+            Else
+                         
+                'Add Ticker Total
+                Volume_Total = Volume_Total + Cells(j, 7).Value
+                
+                'Add to ticker count
+                Ticker_Count = Ticker_Count + 1
+            
+            End If
+        
+            Next j
+'----------------------------------------------------------------------------------------------
+'Create Best - Worst Stock Table (Source: https://stackoverflow.com/questions/51977446/vba-find-highest-value-in-a-column-c-and-return-its-value-and-the-adjacent-ce)
+'----------------------------------------------------------------------------------------------
+
+    'set table row & column headers
+    
+    Range("O2") = "Greatest % Increase"
+    Range("O3") = "Greatest % Decrease"
+    Range("O4") = "Greatest Total Volume"
+    Range("Q1") = "Value"
+    
+    'Set variable to table
+    'Dim sheet As Worksheet
+    Dim tag As String
+    Dim Max As Double
+    Dim Min As Double
+    Dim Max_Volume As Double
+    Dim LastRow2 As Integer
+    
+    'Determine the last row in column 10
+     LastRow2 = Cells(Rows.Count, 9).End(xlUp).Row
+       
+    'Establish Max Percentage
+            
+        For i = 2 To LastRow2
+            If Cells(i, 11).Value > Max Then
+                Max = Cells(i, 11).Value
+                tag = Cells(i, 9).Value
+            End If
+        
+        Cells(2, 17).Value = Max
+        Cells(2, 17).NumberFormat = "0.00%"
+        Cells(2, 16).Value = tag
+                   
+        Next i
+    
+    'Establish Min percentage
+    
+        For n = 2 To LastRow2
+            If Cells(n, 11).Value < Min Then
+                Min = Cells(n, 11).Value
+                tag = Cells(n, 9).Value
+            End If
+        
+        Cells(3, 17).Value = Min
+        Cells(3, 17).NumberFormat = "0.00%"
+        Cells(3, 16).Value = tag
+        
+        Next n
+        
+    'Establish Max Volume
+        
+        For p = 2 To LastRow2
+            If Cells(p, 12).Value > Max_Volume Then
+                Max_Volume = Cells(p, 12).Value
+                tag = Cells(p, 9).Value
+            End If
+        
+        Cells(4, 17).Value = Max_Volume
+        Cells(4, 16).Value = tag
+        
+        Next p
+    
+    'reset Values
+    LastRow2 = 0
+    Max_Volume = 0
+    tag = 0
+    Min = 0
+    Max = 0
+    
+Next ws
+'MsgBox ("All Done")
+
+End Sub
+
+
+
+
+
+
+
+
+
+
